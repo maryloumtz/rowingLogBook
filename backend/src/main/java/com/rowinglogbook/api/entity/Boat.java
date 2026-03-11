@@ -2,7 +2,9 @@ package com.rowinglogbook.api.entity;
 
 import com.rowinglogbook.api.enums.BoatStatus;
 import com.rowinglogbook.api.enums.BoatType;
+import com.rowinglogbook.api.persistence.BoatTypeConverter;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -30,7 +32,7 @@ public class Boat {
     @Column(nullable = false, length = 120)
     private String name;
 
-    @Enumerated(EnumType.STRING)
+    @Convert(converter = BoatTypeConverter.class)
     @Column(nullable = false, length = 40)
     private BoatType type;
 
