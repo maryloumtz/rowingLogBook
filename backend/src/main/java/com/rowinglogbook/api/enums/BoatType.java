@@ -6,5 +6,19 @@ public enum BoatType {
     PAIR,
     QUAD_SCULL,
     FOUR,
-    EIGHT
+    EIGHT;
+
+    public static BoatType fromDatabaseValue(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        String normalized = value.trim().toUpperCase();
+        return switch (normalized) {
+            case "SINGLE" -> SINGLE_SCULL;
+            case "DOUBLE" -> DOUBLE_SCULL;
+            case "QUAD" -> QUAD_SCULL;
+            default -> BoatType.valueOf(normalized);
+        };
+    }
 }
