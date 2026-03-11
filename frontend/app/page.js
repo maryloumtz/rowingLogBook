@@ -175,4 +175,8 @@ export default async function HomePage() {
       </section>
     </main>
   )
+import { redirect } from 'next/navigation'
+
+export default function RootPage() {
+  redirect('/login')
 }
