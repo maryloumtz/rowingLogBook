@@ -92,7 +92,7 @@ POSTGRES_USER=rowing
 POSTGRES_PASSWORD=rowing
 POSTGRES_PORT=5432
 
-PGADMIN_DEFAULT_EMAIL=admin@rowinglogbook.local
+PGADMIN_DEFAULT_EMAIL=admin@example.com
 PGADMIN_DEFAULT_PASSWORD=admin
 PGADMIN_PORT=5050
 
@@ -207,7 +207,7 @@ docker compose up --build
 
 1. Ouvrir `http://localhost:5050`
 2. Se connecter avec:
-   - email: `admin@rowinglogbook.local`
+   - email: `admin@example.com`
    - mot de passe: `admin`
 3. Ajouter un serveur PostgreSQL avec:
    - Host name/address: `db`
