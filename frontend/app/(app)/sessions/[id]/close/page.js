@@ -28,18 +28,28 @@ export default function CloseSessionPage() {
   if (!ready) return null
 
   return (
-    <div className="min-h-screen bg-foam pb-12">
-      <header className="sticky top-0 z-10 bg-white px-4 py-4 shadow-sm ring-1 ring-ink/5">
-        <div className="flex items-center gap-3">
-          <Link href="/dashboard" className="text-surge">
-            ← Retour
+    <div className="min-h-screen bg-foam text-ink">
+      {/* Hero */}
+      <section className="bg-ink px-6 py-10 text-foam lg:px-12">
+        <div className="mx-auto max-w-3xl">
+          <Link href="/dashboard" className="text-sm text-[#9fd8ca] hover:text-foam transition">
+            ← Retour au tableau de bord
           </Link>
-          <h1 className="text-lg font-bold text-ink">Clôturer la sortie</h1>
+          <p className="mt-6 text-sm font-semibold uppercase tracking-[0.3em] text-[#9fd8ca]">
+            Sorties
+          </p>
+          <h1 className="mt-3 text-3xl font-bold sm:text-4xl">Clôturer la sortie</h1>
+          <p className="mt-3 text-foam/60">
+            Renseigne l&apos;heure de retour et la distance réelle parcourue.
+          </p>
         </div>
-      </header>
+      </section>
 
-      <main className="mx-auto max-w-lg px-4 py-6">
-        <CloseSessionForm session={session} />
+      {/* Formulaire */}
+      <main className="mx-auto max-w-3xl px-6 py-8 lg:px-12">
+        <div className="rounded-[2rem] bg-white p-6 shadow-panel ring-1 ring-ink/5 sm:p-8">
+          <CloseSessionForm session={session} />
+        </div>
       </main>
     </div>
   )
