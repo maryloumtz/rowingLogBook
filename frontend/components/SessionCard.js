@@ -30,62 +30,69 @@ export default function SessionCard({ session, boat, responsible }) {
   const isOwner = session.responsibleId === getCurrentUserId()
 
   function handleClick() {
-    if (isOwner) {
-      router.push(`/sessions/${session.id}/close`)
-    }
+    if (isOwner) router.push(`/sessions/${session.id}/close`)
   }
 
   return (
-    <div
+    <article
       role="article"
       onClick={handleClick}
       className={[
-        'rounded-2xl p-4 ring-1 transition',
+        'rounded-[1.75rem] border p-5 transition sm:p-6',
         isWarning
-          ? 'bg-ember/10 ring-ember/30 cursor-pointer'
-          : 'bg-white ring-ink/10',
+          ? 'border-ember/35 bg-[#fff1e8] shadow-[0_18px_40px_rgba(239,131,84,0.16)]'
+          : 'border-ink/8 bg-foam/65',
         isOwner ? 'cursor-pointer hover:shadow-md' : 'cursor-default',
       ].join(' ')}
     >
-      <div className="flex items-start justify-between gap-2">
-        <div>
-          <p className="font-semibold text-ink">{boat?.name ?? '—'}</p>
-          <p className="text-sm text-ink/60">
-            {responsible?.firstName} {responsible?.lastName}
+      <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+        <div className="space-y-2">
+          <div className="flex flex-wrap items-center gap-3">
+            <h3 className="text-2xl font-semibold text-ink">{boat?.name ?? '—'}</h3>
+            <span
+              className={[
+                'rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em]',
+                isWarning ? 'bg-ember text-white' : 'bg-tide text-surge',
+              ].join(' ')}
+            >
+              {isWarning ? 'À surveiller' : 'En cours'}
+            </span>
+            {isWarning && (
+              <span aria-label="Avertissement durée dépassée">⚠️</span>
+            )}
+          </div>
+          <p className="text-base text-ink/70">
+            Responsable :{' '}
+            <span className="font-medium text-ink">
+              {responsible?.firstName} {responsible?.lastName}
+            </span>
           </p>
+          {isOwner && (
+            <p className="text-xs font-medium text-surge">Appuyer pour clôturer →</p>
+          )}
         </div>
 
-        {isWarning && (
-          <span
-            aria-label="Avertissement durée dépassée"
-            className="text-xl"
-          >
-            ⚠️
-          </span>
-        )}
+        <dl className="grid gap-3 text-sm sm:grid-cols-2 lg:min-w-[300px]">
+          <div className="rounded-2xl bg-white/70 px-4 py-3">
+            <dt className="text-xs uppercase tracking-[0.18em] text-ink/45">Départ</dt>
+            <dd className="mt-1 text-lg font-semibold text-ink">
+              {new Date(session.departureTime).toLocaleTimeString('fr-FR', {
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
+            </dd>
+          </div>
+          <div className="rounded-2xl bg-white/70 px-4 py-3">
+            <dt className="text-xs uppercase tracking-[0.18em] text-ink/45">Durée écoulée</dt>
+            <dd className={[
+              'mt-1 text-lg font-semibold',
+              isWarning ? 'text-ember' : 'text-ink',
+            ].join(' ')}>
+              {formatDuration(elapsed)}
+            </dd>
+          </div>
+        </dl>
       </div>
-
-      <div className="mt-3 flex items-center justify-between text-sm">
-        <span className="text-ink/60">
-          Départ :{' '}
-          {new Date(session.departureTime).toLocaleTimeString('fr-FR', {
-            hour: '2-digit',
-            minute: '2-digit',
-          })}
-        </span>
-        <span
-          className={[
-            'font-medium',
-            isWarning ? 'text-ember' : 'text-surge',
-          ].join(' ')}
-        >
-          {formatDuration(elapsed)}
-        </span>
-      </div>
-
-      {isOwner && (
-        <p className="mt-2 text-xs text-surge">Appuyer pour clôturer →</p>
-      )}
-    </div>
+    </article>
   )
 }

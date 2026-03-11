@@ -195,7 +195,7 @@ export default function NewSessionForm() {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full rounded-xl bg-surge py-3 text-sm font-semibold text-white transition hover:bg-surge/90 disabled:opacity-50"
+        className="w-full rounded-full bg-ink py-3 text-sm font-semibold text-foam transition hover:bg-ink/85 disabled:opacity-50"
       >
         {isSubmitting ? 'Enregistrement…' : 'Démarrer la sortie'}
       </button>
