@@ -17,3 +17,5 @@ backend/.mvn/
 .idea/
 .vscode/
 .DS_Store
+
+.claude/
