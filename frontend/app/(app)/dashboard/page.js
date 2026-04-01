@@ -3,22 +3,20 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import SessionCard from '../../../components/SessionCard'
-import { mockBoats, mockMembers, mockSessions } from '../../../lib/mocks'
 import { WARN_THRESHOLD_MS } from '../../../lib/constants'
+import { getToken } from '../../../lib/auth'
 import useAuthStore from '../../../store/authStore'
 
-const USE_MOCK = true
-
 async function fetchActiveSessions() {
-  if (USE_MOCK) {
-    await new Promise((r) => setTimeout(r, 0))
-    return mockSessions
-  }
-  const response = await fetch('/api/sessions?status=IN_PROGRESS', {
-    headers: { 'Content-Type': 'application/json' },
+  const response = await fetch('/api/sessions', {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${getToken()}`,
+    },
   })
   if (!response.ok) throw new Error('Impossible de charger les sorties')
-  return response.json()
+  const data = await response.json()
+  return data.filter((s) => s.status === 'OPEN')
 }
 
 export default function DashboardPage() {
@@ -37,18 +35,10 @@ export default function DashboardPage() {
     return () => clearInterval(tick)
   }, [])
 
-  function getBoat(boatId) {
-    return mockBoats.find((b) => b.id === boatId) ?? null
-  }
-
-  function getMember(userId) {
-    return mockMembers.find((m) => m.id === userId) ?? null
-  }
-
   const logout = useAuthStore((s) => s.logout)
 
   const warningCount = sessions.filter(
-    (s) => now - new Date(s.departureTime).getTime() > WARN_THRESHOLD_MS
+    (s) => now - new Date(s.startTime).getTime() > WARN_THRESHOLD_MS
   ).length
 
   return (
@@ -116,12 +106,7 @@ export default function DashboardPage() {
               <p className="text-center text-sm text-ink/50">Aucune sortie en cours.</p>
             )}
             {sessions.map((session) => (
-              <SessionCard
-                key={session.id}
-                session={session}
-                boat={getBoat(session.boatId)}
-                responsible={getMember(session.responsibleId)}
-              />
+              <SessionCard key={session.id} session={session} />
             ))}
           </div>
         </div>

@@ -13,21 +13,21 @@ function formatDuration(ms) {
   return `${hours}h${String(minutes).padStart(2, '0')}`
 }
 
-export default function SessionCard({ session, boat, responsible }) {
+export default function SessionCard({ session }) {
   const router = useRouter()
   const [elapsed, setElapsed] = useState(
-    () => Date.now() - new Date(session.departureTime).getTime()
+    () => Date.now() - new Date(session.startTime).getTime()
   )
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setElapsed(Date.now() - new Date(session.departureTime).getTime())
+      setElapsed(Date.now() - new Date(session.startTime).getTime())
     }, 60000)
     return () => clearInterval(interval)
-  }, [session.departureTime])
+  }, [session.startTime])
 
   const isWarning = elapsed > WARN_THRESHOLD_MS
-  const isOwner = session.responsibleId === getCurrentUserId()
+  const isOwner = String(session.createdById) === getCurrentUserId()
 
   function handleClick() {
     if (isOwner) router.push(`/sessions/${session.id}/close`)
@@ -48,7 +48,7 @@ export default function SessionCard({ session, boat, responsible }) {
       <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-3">
-            <h3 className="text-2xl font-semibold text-ink">{boat?.name ?? '—'}</h3>
+            <h3 className="text-2xl font-semibold text-ink">{session.boatName ?? '—'}</h3>
             <span
               className={[
                 'rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em]',
@@ -63,9 +63,7 @@ export default function SessionCard({ session, boat, responsible }) {
           </div>
           <p className="text-base text-ink/70">
             Responsable :{' '}
-            <span className="font-medium text-ink">
-              {responsible?.firstName} {responsible?.lastName}
-            </span>
+            <span className="font-medium text-ink">{session.createdByName}</span>
           </p>
           {isOwner && (
             <p className="text-xs font-medium text-surge">Appuyer pour clôturer →</p>
@@ -76,7 +74,7 @@ export default function SessionCard({ session, boat, responsible }) {
           <div className="rounded-2xl bg-white/70 px-4 py-3">
             <dt className="text-xs uppercase tracking-[0.18em] text-ink/45">Départ</dt>
             <dd className="mt-1 text-lg font-semibold text-ink">
-              {new Date(session.departureTime).toLocaleTimeString('fr-FR', {
+              {new Date(session.startTime).toLocaleTimeString('fr-FR', {
                 hour: '2-digit',
                 minute: '2-digit',
               })}
