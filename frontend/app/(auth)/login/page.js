@@ -12,7 +12,7 @@ const schema = z.object({
   password: z.string().min(1, 'Le mot de passe est requis'),
 })
 
-const USE_MOCK = true
+const USE_MOCK = false
 
 async function loginRequest(email, password) {
   if (USE_MOCK) {
