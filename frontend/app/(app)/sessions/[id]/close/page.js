@@ -4,8 +4,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import CloseSessionForm from '../../../../../components/forms/CloseSessionForm'
-import { mockSessions } from '../../../../../lib/mocks'
-import { getCurrentUserId } from '../../../../../lib/auth'
+import { getToken, getCurrentUserId } from '../../../../../lib/auth'
 
 export default function CloseSessionPage() {
   const { id } = useParams()
@@ -14,15 +13,23 @@ export default function CloseSessionPage() {
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
-    const found = mockSessions.find((s) => s.id === id)
-
-    if (!found || found.responsibleId !== getCurrentUserId()) {
-      router.replace('/dashboard')
-      return
-    }
-
-    setSession(found)
-    setReady(true)
+    fetch('/api/sessions', {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${getToken()}`,
+      },
+    })
+      .then((r) => r.json())
+      .then((sessions) => {
+        const found = sessions.find((s) => String(s.id) === id)
+        if (!found || String(found.createdById) !== getCurrentUserId()) {
+          router.replace('/dashboard')
+          return
+        }
+        setSession(found)
+        setReady(true)
+      })
+      .catch(() => router.replace('/dashboard'))
   }, [id, router])
 
   if (!ready) return null
