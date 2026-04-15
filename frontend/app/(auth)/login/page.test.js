@@ -2,8 +2,6 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import LoginPage from './page'
 
-// ─── Mocks ───────────────────────────────────────────────────────────────────
-
 const mockPush = jest.fn()
 jest.mock('next/navigation', () => ({
   useRouter: () => ({ push: mockPush }),
@@ -15,17 +13,15 @@ jest.mock('../../../store/authStore', () => ({
   default: (selector) => selector({ setAuth: mockSetAuth }),
 }))
 
-jest.mock('../../../lib/mocks', () => ({
-  mockCurrentUser: {
+const successPayload = {
+  token: 'fake.token.signature',
+  user: {
     id: 'user-001',
     firstName: 'Marc',
     lastName: 'Dupont',
     email: 'marc.dupont@rowing.fr',
   },
-  mockToken: 'fake.token.signature',
-}))
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+}
 
 async function fillAndSubmit(email, password) {
   const user = userEvent.setup()
@@ -34,13 +30,12 @@ async function fillAndSubmit(email, password) {
   await user.click(screen.getByRole('button', { name: /se connecter/i }))
 }
 
-// ─── Tests ───────────────────────────────────────────────────────────────────
-
 beforeEach(() => {
   jest.clearAllMocks()
+  global.fetch = jest.fn()
 })
 
-describe('LoginPage — rendu', () => {
+describe('LoginPage - rendu', () => {
   it('affiche le formulaire de connexion', () => {
     render(<LoginPage />)
     expect(screen.getByLabelText('Email')).toBeInTheDocument()
@@ -49,8 +44,8 @@ describe('LoginPage — rendu', () => {
   })
 })
 
-describe('LoginPage — validation Zod', () => {
-  it('affiche une erreur si l\'email est invalide', async () => {
+describe('LoginPage - validation Zod', () => {
+  it('affiche une erreur si l email est invalide', async () => {
     render(<LoginPage />)
     await fillAndSubmit('pas-un-email', 'password')
     await waitFor(() => {
@@ -67,26 +62,39 @@ describe('LoginPage — validation Zod', () => {
   })
 })
 
-describe('LoginPage — soumission réussie', () => {
-  it('appelle setAuth et redirige vers /dashboard avec les bonnes credentials mock', async () => {
+describe('LoginPage - soumission reussie', () => {
+  it('appelle setAuth et redirige vers /dashboard', async () => {
+    global.fetch.mockResolvedValue({
+      ok: true,
+      json: async () => successPayload,
+    })
+
     render(<LoginPage />)
     await fillAndSubmit('marc.dupont@rowing.fr', 'password')
 
     await waitFor(() => {
-      expect(mockSetAuth).toHaveBeenCalledWith('fake.token.signature', {
-        id: 'user-001',
-        firstName: 'Marc',
-        lastName: 'Dupont',
-        email: 'marc.dupont@rowing.fr',
-      })
+      expect(mockSetAuth).toHaveBeenCalledWith(successPayload.token, successPayload.user)
     })
 
+    expect(global.fetch).toHaveBeenCalledWith('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: 'marc.dupont@rowing.fr',
+        password: 'password',
+      }),
+    })
     expect(mockPush).toHaveBeenCalledWith('/dashboard')
   })
 })
 
-describe('LoginPage — soumission échouée', () => {
-  it('affiche un message d\'erreur si les credentials sont incorrects', async () => {
+describe('LoginPage - soumission echouee', () => {
+  it('affiche un message d erreur si les credentials sont incorrects', async () => {
+    global.fetch.mockResolvedValue({
+      ok: false,
+      json: async () => ({ message: 'Email ou mot de passe incorrect' }),
+    })
+
     render(<LoginPage />)
     await fillAndSubmit('marc.dupont@rowing.fr', 'mauvais-mdp')
 
