@@ -5,24 +5,35 @@ const localStorageMock = (() => {
   let store = {}
   return {
     getItem: (key) => store[key] ?? null,
-    setItem: (key, value) => { store[key] = String(value) },
-    removeItem: (key) => { delete store[key] },
-    clear: () => { store = {} },
+    setItem: (key, value) => {
+      store[key] = String(value)
+    },
+    removeItem: (key) => {
+      delete store[key]
+    },
+    clear: () => {
+      store = {}
+    },
   }
 })()
 
 Object.defineProperty(window, 'localStorage', { value: localStorageMock })
 
 const mockUser = { id: 'user-001', firstName: 'Marc', lastName: 'Dupont' }
+let consoleErrorSpy
 
 beforeEach(() => {
   localStorageMock.clear()
-  // Remet le store à son état initial entre chaque test
   useAuthStore.setState({ token: null, currentUser: null })
+  consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+})
+
+afterEach(() => {
+  consoleErrorSpy.mockRestore()
 })
 
 describe('setAuth', () => {
-  it('met à jour token et currentUser dans le store', () => {
+  it('met a jour token et currentUser dans le store', () => {
     const { result } = renderHook(() => useAuthStore())
 
     act(() => {
@@ -33,7 +44,7 @@ describe('setAuth', () => {
     expect(result.current.currentUser).toEqual(mockUser)
   })
 
-  it('écrit le token en localStorage', () => {
+  it('ecrit le token en localStorage', () => {
     const { result } = renderHook(() => useAuthStore())
 
     act(() => {
