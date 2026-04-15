@@ -1,11 +1,11 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useRouter } from 'next/navigation'
-import { mockAvailableBoats, mockMembers } from '../../lib/mocks'
-import { getCurrentUserId } from '../../lib/auth'
+import { getToken, getCurrentUserId } from '../../lib/auth'
 
 const schema = z.object({
   boatId: z.string().min(1, 'Choisissez un bateau'),
@@ -34,16 +34,13 @@ function toDatetimeLocal(date) {
   )
 }
 
-const USE_MOCK = true
-
 async function submitSession(data) {
-  if (USE_MOCK) {
-    await new Promise((r) => setTimeout(r, 300))
-    return { id: 'session-new', ...data }
-  }
   const response = await fetch('/api/sessions', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${getToken()}`,
+    },
     body: JSON.stringify(data),
   })
   if (!response.ok) {
@@ -55,6 +52,14 @@ async function submitSession(data) {
 
 export default function NewSessionForm() {
   const router = useRouter()
+  const [boats, setBoats] = useState([])
+  const [members, setMembers] = useState([])
+
+  useEffect(() => {
+    const headers = { Authorization: `Bearer ${getToken()}` }
+    fetch('/api/boats', { headers }).then((r) => r.json()).then(setBoats).catch(() => {})
+    fetch('/api/members', { headers }).then((r) => r.json()).then(setMembers).catch(() => {})
+  }, [])
 
   const {
     register,
@@ -75,7 +80,11 @@ export default function NewSessionForm() {
 
   async function onSubmit(data) {
     try {
-      await submitSession({ ...data, responsibleId: getCurrentUserId() })
+      await submitSession({
+        boatId: Number(data.boatId),
+        createdById: Number(getCurrentUserId()),
+        startTime: new Date(data.departureTime).toISOString(),
+      })
       router.push('/dashboard')
     } catch (err) {
       setError('root', { message: err.message })
@@ -95,9 +104,9 @@ export default function NewSessionForm() {
           className="w-full rounded-xl border border-ink/20 bg-foam px-4 py-2.5 text-sm outline-none focus:border-surge focus:ring-2 focus:ring-surge/20"
         >
           <option value="">— Choisir un bateau —</option>
-          {mockAvailableBoats.map((boat) => (
+          {boats.map((boat) => (
             <option key={boat.id} value={boat.id}>
-              {boat.name} ({boat.type})
+              {boat.name} — {boat.type} (cap. {boat.capacity})
             </option>
           ))}
         </select>
@@ -164,7 +173,7 @@ export default function NewSessionForm() {
           {...register('crewMemberIds')}
           className="w-full rounded-xl border border-ink/20 bg-foam px-4 py-2.5 text-sm outline-none focus:border-surge focus:ring-2 focus:ring-surge/20"
         >
-          {mockMembers.map((member) => (
+          {members.map((member) => (
             <option key={member.id} value={member.id}>
               {member.firstName} {member.lastName}
             </option>
